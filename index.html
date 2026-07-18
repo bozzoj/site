@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bxo // Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-0: #08060d;
+            --bg-1: #120c1e;
+            --panel: rgba(17, 13, 27, 0.6);
+            --border: rgba(139, 107, 255, 0.16);
+            --border-hover: rgba(168, 140, 255, 0.5);
+            --accent: #8b6bff;
+            --accent-2: #ff5fa0;
+            --teal: #2fe6c6;
+            --text: #f5f2ff;
+            --muted: #a79fc0;
+            --muted-2: #5c5474;
+            --online: #23c55e;
+            --idle: #f5b942;
+            --dnd: #ff4d6d;
+            --mc-green: #6bdc8c;
+            --val-red: #ff4655;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-0);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .display { font-family: 'Bricolage Grotesque', sans-serif; }
+
+        /* ---------- AURORA BACKGROUND ---------- */
+        .aurora-bg { position: fixed; inset: 0; z-index: -3; background: var(--bg-0); overflow: hidden; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(90px); }
+        .blob-v { width: 520px; height: 520px; background: var(--accent); opacity: .35; top: -140px; left: -100px; animation: float1 17s ease-in-out infinite alternate; }
+        .blob-m { width: 460px; height: 460px; background: var(--accent-2); opacity: .28; bottom: -140px; right: -110px; animation: float2 21s ease-in-out infinite alternate; }
+        .blob-t { width: 380px; height: 380px; background: var(--teal); opacity: .16; top: 38%; left: 58%; animation: float3 23s ease-in-out infinite alternate; }
+        @keyframes float1 { to { transform: translate(60px, 50px) scale(1.15); } }
+        @keyframes float2 { to { transform: translate(-50px, -35px) scale(1.1); } }
+        @keyframes float3 { to { transform: translate(-40px, 45px) scale(1.2); } }
+        .grid-overlay {
+            position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: radial-gradient(ellipse 80% 65% at 50% 32%, black 15%, transparent 75%);
+        }
+
+        #trail-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
+
+        /* ---------- LIVE DOT ---------- */
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block;
+            animation: pulseDot 2s ease-out infinite;
+        }
+        @keyframes pulseDot {
+            0% { box-shadow: 0 0 0 0 rgba(139,107,255,0.55); }
+            70% { box-shadow: 0 0 0 8px rgba(139,107,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(139,107,255,0); }
+        }
+
+        /* ---------- PANELS ---------- */
+        .panel {
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 12px 30px rgba(0,0,0,0.45);
+            transition: border-color .25s ease, box-shadow .25s ease;
+        }
+        .panel:hover {
+            border-color: var(--border-hover);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(139,107,255,0.06), 0 16px 34px rgba(0,0,0,0.5);
+        }
+
+        .tag-label {
+            font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .tag-label i { width: 13px; height: 13px; color: var(--accent); }
+
+        /* ---------- HOLO RING (avatar + album art) ---------- */
+        .holo-ring {
+            background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--teal), var(--accent));
+            animation: spin 7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ---------- NOW PLAYING ---------- */
+        .eqbar { width: 3px; height: 4px; background: var(--accent); display: inline-block; border-radius: 1px; }
+        .now-playing.is-live .eqbar { animation: eqBounce 0.8s ease infinite alternate; }
+        .now-playing.is-live .eqbar:nth-child(2) { animation-delay: .15s; }
+        .now-playing.is-live .eqbar:nth-child(3) { animation-delay: .3s; }
+        .now-playing.is-live .eqbar:nth-child(4) { animation-delay: .45s; }
+        @keyframes eqBounce { 0% { height: 4px; } 100% { height: 15px; } }
+
+        .progress-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .4s linear; }
+
+        /* ---------- NAV TABS ---------- */
+        .nav-btn {
+            cursor: pointer; text-align: left; width: 100%; background: transparent; border: none;
+            font-family: inherit; color: var(--muted);
+        }
+        .nav-btn.active {
+            background: linear-gradient(90deg, rgba(139,107,255,0.16) 0%, transparent 100%);
+            border-left: 3px solid var(--accent);
+            color: #fff;
+        }
+        .nav-btn:not(.active) { border-left: 3px solid transparent; }
+        .nav-btn i { color: var(--muted-2); }
+        .nav-btn.active i { color: var(--accent); }
+
+        /* ---------- LINK ROWS ---------- */
+        .link-row {
+            position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 16px 18px; text-decoration: none; overflow: hidden;
+        }
+        .link-row::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent);
+            transform: scaleY(0); transform-origin: bottom; transition: transform .25s ease;
+        }
+        .link-row:hover::before { transform: scaleY(1); }
+        .link-row .icon-box {
+            width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--muted);
+            transition: color .2s ease, border-color .2s ease; flex-shrink: 0;
+        }
+        .link-row:hover .icon-box.icon-default { color: var(--accent); border-color: var(--border-hover); }
+        .link-row:hover .icon-box.icon-mc { color: var(--mc-green); border-color: rgba(107,220,140,0.4); }
+        .link-row:hover .icon-box.icon-val { color: var(--val-red); border-color: rgba(255,70,85,0.4); }
+        .link-row h3 { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); }
+        .link-row p { margin: 3px 0 0; font-size: 11px; color: var(--muted); }
+        .chip { font-size: 10.5px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+
+        .status-dot { transition: background-color .3s ease, box-shadow .3s ease; }
+
+        /* ---------- SITE AUDIO MINI VISUALIZER ---------- */
+        .bar { width: 3px; height: 4px; background-color: var(--accent); display: inline-block; border-radius: 1px; }
+        .playing .bar { animation: bounceAudio 0.8s ease infinite alternate; }
+        .playing .bar:nth-child(2) { animation-delay: 0.15s; }
+        .playing .bar:nth-child(3) { animation-delay: 0.3s; }
+        .playing .bar:nth-child(4) { animation-delay: 0.45s; }
+        @keyframes bounceAudio { 0% { height: 4px; } 100% { height: 16px; } }
+
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none; background: rgba(139,107,255,0.2);
+            height: 3px; border-radius: 2px; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 50%;
+            background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(139,107,255,0.7);
+        }
+
+        ::selection { background: var(--accent); color: #0c0716; }
+        a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen select-none">
+
+    <audio id="bg-music" src="canzone.mp3" loop></audio>
+    <div class="aurora-bg">
+        <div class="blob blob-v"></div>
+        <div class="blob blob-m"></div>
+        <div class="blob blob-t"></div>
+        <div class="grid-overlay"></div>
+    </div>
+    <canvas id="trail-canvas"></canvas>
+
+    <div class="w-full max-w-4xl mx-auto px-4 sm:px-8 pt-8 flex justify-between items-center flex-wrap gap-4">
+        <div class="flex items-center gap-2 mono text-xs tracking-widest" style="color:var(--muted)">
+            <span class="live-dot"></span> SESSIONE LIVE
+        </div>
+        <div class="flex items-center gap-3 px-4 py-2 panel rounded-xl mono text-xs">
+            <button id="music-container" class="flex items-center gap-2 cursor-pointer bg-transparent border-0 p-0" style="color:inherit;">
+                <span id="audio-text" style="color:var(--muted)">AUDIO OFF</span>
+                <div id="visualizer" class="flex items-end gap-0.5 h-4 w-6">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+            </button>
+            <div class="h-4 w-px" style="background:var(--border)"></div>
+            <div class="flex items-center gap-2">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5" style="color:var(--muted)" id="volume-icon"></i>
+                <input type="range" id="volume-control" min="0" max="1" step="0.05" value="0.5" class="w-16 sm:w-20 cursor-pointer">
+            </div>
+        </div>
+    </div>
+
+    <!-- NOW PLAYING HERO -->
+    <div class="w-full max-w-4xl mx-auto px-4 sm:px-8 mt-5">
+        <div class="panel rounded-2xl p-5 now-playing" id="now-playing-card">
+            <div class="flex items-center gap-4">
+                <div class="relative flex-shrink-0 p-[3px] rounded-2xl holo-ring">
+                    <img id="now-art" src="" alt="" class="w-14 h-14 rounded-[14px] object-cover" style="border:2px solid var(--bg-1); display:none;">
+                    <div id="now-art-placeholder" class="w-14 h-14 rounded-[14px] flex items-center justify-center" style="background:var(--bg-1);">
+                        <i data-lucide="music" class="w-5 h-5" style="color:var(--muted-2)"></i>
+                    </div>
+                </div>
+                <div class="flex-grow min-w-0">
+                    <div class="tag-label mono mb-1"><i data-lucide="radio"></i> Spotify</div>
+                    <div class="display font-bold truncate text-[15px]" id="now-title" style="color:var(--text)">Nessuna riproduzione al momento</div>
+                    <div class="text-xs truncate mono mt-0.5" id="now-artist" style="color:var(--muted)">Non in ascolto su Spotify</div>
+                </div>
+                <div class="flex items-end gap-0.5 h-4 flex-shrink-0">
+                    <div class="eqbar"></div><div class="eqbar"></div><div class="eqbar"></div><div class="eqbar"></div>
+                </div>
+            </div>
+            <div class="mt-4" id="now-progress-wrap" style="display:none;">
+                <div class="progress-track"><div class="progress-fill" id="now-progress-fill"></div></div>
+                <div class="flex justify-between mono text-[10px] mt-1.5" style="color:var(--muted-2)">
+                    <span id="now-elapsed">0:00</span><span id="now-total">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 px-4 sm:px-8 pt-6 pb-10">
+
+        <!-- SIDEBAR -->
+        <div class="lg:col-span-4 space-y-5">
+
+            <div class="panel rounded-2xl p-6 text-center flex flex-col items-center space-y-4">
+                <div class="relative p-[3px] rounded-full holo-ring">
+                    <img id="main-avatar" src="discord_fake_avatar_decorations_1782047360579.gif" alt="Avatar"
+                         class="w-24 h-24 rounded-full object-cover" style="border:3px solid var(--bg-1)">
+                </div>
+                <div>
+                    <h1 class="display text-3xl font-bold tracking-tight" style="color:#fff">Bxo</h1>
+                    <p class="text-xs mono mt-1 uppercase tracking-wider" style="color:var(--accent)">// Staff &amp; Forensics</p>
+                </div>
+                <div class="w-full grid grid-cols-2 gap-y-2 pt-3 text-left mono text-[11px]" style="border-top:1px solid var(--border); color:var(--muted)">
+                    <div><span style="color:var(--muted-2)">ETÀ</span><br>17 Anni</div>
+                    <div><span style="color:var(--muted-2)">LOC</span><br>Italia</div>
+                    <div class="col-span-2"><span style="color:var(--muted-2)">ROLE</span><br>Staff / Support</div>
+                </div>
+            </div>
+
+            <div class="panel rounded-2xl p-2 flex flex-col gap-1">
+                <button class="nav-btn active flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider" data-target="panel-core">
+                    <i data-lucide="layers" class="w-4 h-4"></i> Core Index
+                </button>
+                <button class="nav-btn flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider" data-target="panel-games">
+                    <i data-lucide="gamepad-2" class="w-4 h-4"></i> Games
+                </button>
+            </div>
+
+            <div class="panel rounded-2xl p-4 flex items-center gap-4">
+                <div class="relative flex-shrink-0">
+                    <img id="dc-pfp" src="discord_fake_avatar_decorations_1782047360579.gif" alt="Discord" class="w-11 h-11 rounded-xl object-cover">
+                    <div id="dc-status" class="status-dot absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full" style="border:2px solid var(--bg-1); background:var(--muted-2)"></div>
+                </div>
+                <div class="flex-grow min-w-0 mono text-xs">
+                    <div class="font-bold truncate" id="dc-name" style="color:var(--text)">Connessione...</div>
+                    <div class="truncate text-[10px] mt-0.5" id="dc-status-text" style="color:var(--muted)">Inizializzazione</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="lg:col-span-8 space-y-5">
+
+            <div id="panel-core" class="tab-panel space-y-5">
+                <div class="panel rounded-2xl p-5 space-y-3">
+                    <div class="tag-label mono"><i data-lucide="crosshair"></i> Current Assignments</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mono">
+                        <div class="p-4 rounded-xl flex flex-col justify-between" style="background:rgba(255,255,255,0.02); border:1px solid var(--border)">
+                            <span class="text-xs font-bold" style="color:var(--text)">AuraMC Network</span>
+                            <span class="text-[10px] font-semibold mt-3 tracking-wide" style="color:var(--accent)">[MOD // SUPPORTER]</span>
+                        </div>
+                        <div class="p-4 rounded-xl flex flex-col justify-between" style="background:rgba(255,255,255,0.02); border:1px solid var(--border)">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold" style="color:var(--text)">FenixMC</span>
+                                <i data-lucide="monitor-dot" class="w-3.5 h-3.5" style="color:var(--dnd)"></i>
+                            </div>
+                            <span class="text-[10px] font-semibold mt-3 tracking-wide" style="color:var(--dnd)">[SS VERIFIED]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="https://discord.com/users/1501329544202686545" target="_blank" class="panel rounded-2xl link-row">
+                    <div class="flex items-center gap-4">
+                        <div class="icon-box icon-default"><i data-lucide="message-square" class="w-4 h-4"></i></div>
+                        <div>
+                            <h3>Comunicazioni Primarie</h3>
+                            <p>Apri una conversazione privata su Discord</p>
+                        </div>
+                    </div>
+                    <span class="chip mono">635a</span>
+                </a>
+            </div>
+
+            <div id="panel-games" class="tab-panel space-y-5 hidden">
+                <a href="https://namemc.com/profile/_Bxo" target="_blank" class="panel rounded-2xl link-row">
+                    <div class="flex items-center gap-4">
+                        <div class="icon-box icon-mc"><i data-lucide="box" class="w-4 h-4"></i></div>
+                        <div>
+                            <h3>Minecraft Database</h3>
+                            <p>Visualizza le skin storiche e gli alias</p>
+                        </div>
+                    </div>
+                    <span class="chip mono">_Bxo</span>
+                </a>
+
+                <a href="https://tracker.gg/valorant/profile/riot/i%20love%20her%20feet%23gabri/overview?platform=pc&amp;playlist=competitive&amp;season=4f0864e2-40af-28a4-de2c-0e9e64e75f23" target="_blank" class="panel rounded-2xl link-row">
+                    <div class="flex items-center gap-4">
+                        <div class="icon-box icon-val"><i data-lucide="gamepad-2" class="w-4 h-4"></i></div>
+                        <div>
+                            <h3>Valorant — Tracker.gg</h3>
+                            <p>Rank, statistiche e partite competitive</p>
+                        </div>
+                    </div>
+                    <span class="chip mono">#gabri</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DISCORD_ID = "1501329544202686545";
+
+        /* ---------- TAB NAVIGATION ---------- */
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+                document.getElementById(btn.dataset.target).classList.remove('hidden');
+            });
+        });
+
+        /* ---------- SITE BACKGROUND MUSIC ---------- */
+        const audio = document.getElementById('bg-music');
+        const musicContainer = document.getElementById('music-container');
+        const audioText = document.getElementById('audio-text');
+        const volumeControl = document.getElementById('volume-control');
+        const volumeIcon = document.getElementById('volume-icon');
+        let playing = false;
+
+        audio.volume = volumeControl.value;
+
+        function toggleAudio() {
+            if (playing) {
+                audio.pause();
+                musicContainer.classList.remove('playing');
+                audioText.textContent = "AUDIO OFF";
+            } else {
+                audio.play().then(() => {
+                    musicContainer.classList.add('playing');
+                    audioText.textContent = "AUDIO ON";
+                }).catch(() => console.log("Blocco riproduzione"));
+            }
+            playing = !playing;
+        }
+
+        musicContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleAudio();
+        });
+
+        volumeControl.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+            if (audio.volume == 0) volumeIcon.setAttribute('data-lucide', 'volume-x');
+            else if (audio.volume < 0.4) volumeIcon.setAttribute('data-lucide', 'volume-1');
+            else volumeIcon.setAttribute('data-lucide', 'volume-2');
+            lucide.createIcons();
+        });
+
+        document.body.addEventListener('click', () => {
+            if (!playing && audio.paused) {
+                audio.play().then(() => {
+                    playing = true;
+                    musicContainer.classList.add('playing');
+                    audioText.textContent = "AUDIO ON";
+                    lucide.createIcons();
+                }).catch(() => {});
+            }
+        }, { once: true });
+
+        /* ---------- CURSOR TRAIL (violet -> magenta duotone) ---------- */
+        const canvas = document.getElementById('trail-canvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+        const maxPoints = 16;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        window.addEventListener('mousemove', (e) => {
+            points.push({ x: e.clientX, y: e.clientY, alpha: 1.0 });
+        });
+
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        function drawTrail() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (points.length > 1) {
+                for (let i = 1; i < points.length; i++) {
+                    const p1 = points[i - 1];
+                    const p2 = points[i];
+                    const t = i / points.length;
+                    const r = lerp(139, 255, t), g = lerp(107, 95, t), b = lerp(255, 160, t);
+                    const opacity = t * p2.alpha * 0.55;
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                    ctx.lineWidth = t * 4;
+                    ctx.lineCap = 'round';
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+            if (points.length > maxPoints) points.shift();
+            else if (points.length > 0) {
+                for (let i = 0; i < points.length; i++) points[i].alpha -= 0.03;
+                points = points.filter(p => p.alpha > 0);
+            }
+            requestAnimationFrame(drawTrail);
+        }
+        drawTrail();
+
+        /* ---------- NOW PLAYING (Spotify via Lanyard) ---------- */
+        let currentSpotify = null;
+
+        function formatTime(ms) {
+            const totalSec = Math.max(0, Math.floor(ms / 1000));
+            const m = Math.floor(totalSec / 60);
+            const s = totalSec % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function tickProgress() {
+            const fill = document.getElementById('now-progress-fill');
+            const elapsedEl = document.getElementById('now-elapsed');
+            const totalEl = document.getElementById('now-total');
+            if (!currentSpotify || !fill) return;
+            const { start, end } = currentSpotify;
+            const dur = end - start;
+            const elapsed = Math.min(Math.max(Date.now() - start, 0), dur);
+            fill.style.width = (dur > 0 ? (elapsed / dur) * 100 : 0) + '%';
+            elapsedEl.textContent = formatTime(elapsed);
+            totalEl.textContent = formatTime(dur);
+        }
+        setInterval(tickProgress, 1000);
+
+        function setNowPlaying(active, data) {
+            const card = document.getElementById('now-playing-card');
+            const art = document.getElementById('now-art');
+            const artPh = document.getElementById('now-art-placeholder');
+            const title = document.getElementById('now-title');
+            const artist = document.getElementById('now-artist');
+            const progWrap = document.getElementById('now-progress-wrap');
+
+            if (active && data) {
+                card.classList.add('is-live');
+                if (data.album_art_url) {
+                    art.src = data.album_art_url;
+                    art.style.display = 'block';
+                    artPh.style.display = 'none';
+                } else {
+                    art.style.display = 'none';
+                    artPh.style.display = 'flex';
+                }
+                title.textContent = data.song || 'Brano sconosciuto';
+                artist.textContent = data.artist || '';
+                progWrap.style.display = 'block';
+                currentSpotify = data.timestamps || null;
+                tickProgress();
+            } else {
+                card.classList.remove('is-live');
+                art.style.display = 'none';
+                artPh.style.display = 'flex';
+                title.textContent = 'Nessuna riproduzione al momento';
+                artist.textContent = 'Non in ascolto su Spotify';
+                progWrap.style.display = 'none';
+                currentSpotify = null;
+            }
+        }
+
+        async function updateDiscordStatus() {
+            try {
+                const r = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
+                const d = await r.json();
+                if (!d.success) {
+                    document.getElementById("dc-name").textContent = "Discord non collegato";
+                    document.getElementById("dc-status-text").textContent = "Entra in discord.gg/lanyard per attivare lo stato live";
+                    setNowPlaying(false);
+                    return;
+                }
+                if (d.success && d.data) {
+                    const userdata = d.data;
+                    document.getElementById("dc-name").textContent = userdata.discord_user.global_name || userdata.discord_user.username;
+
+                    if (userdata.discord_user.avatar) {
+                        const avatarUrl = `https://cdn.discordapp.com/avatars/${DISCORD_ID}/${userdata.discord_user.avatar}.png?size=256`;
+                        document.getElementById("dc-pfp").src = avatarUrl;
+                        document.getElementById("main-avatar").src = avatarUrl;
+                    }
+
+                    const s = userdata.discord_status;
+                    const ind = document.getElementById("dc-status");
+                    ind.style.boxShadow = 'none';
+                    if (s === 'online') { ind.style.background = '#23c55e'; ind.style.boxShadow = '0 0 8px #23c55e'; }
+                    else if (s === 'idle') { ind.style.background = '#f5b942'; ind.style.boxShadow = '0 0 8px #f5b942'; }
+                    else if (s === 'dnd') { ind.style.background = '#ff4d6d'; ind.style.boxShadow = '0 0 8px #ff4d6d'; }
+                    else { ind.style.background = '#5c5474'; }
+
+                    if (userdata.listening_to_spotify && userdata.spotify) {
+                        setNowPlaying(true, userdata.spotify);
+                        document.getElementById("dc-status-text").textContent = "🎧 In ascolto su Spotify";
+                    } else {
+                        setNowPlaying(false);
+                        if (userdata.activities && userdata.activities.length > 0) {
+                            const act = userdata.activities.find(a => a.type !== 4) || userdata.activities[0];
+                            document.getElementById("dc-status-text").textContent = act.type === 4 ? act.state : `In-Game: ${act.name}`;
+                        } else {
+                            document.getElementById("dc-status-text").textContent = s === "offline" ? "Disconnesso" : "Disponibile";
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Errore nel caricamento dei dati Discord:", err);
+                document.getElementById("dc-status-text").textContent = "Impossibile contattare Lanyard";
+                setNowPlaying(false);
+            }
+        }
+        updateDiscordStatus();
+        setInterval(updateDiscordStatus, 15000);
+        lucide.createIcons();
+    </script>
+</body>
+</html>
