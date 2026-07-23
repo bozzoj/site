@@ -22,9 +22,6 @@
             --text: #f5f2ff;
             --muted: #a79fc0;
             --muted-2: #5c5474;
-            --online: #23c55e;
-            --idle: #f5b942;
-            --dnd: #ff4d6d;
             --mc-green: #6bdc8c;
             --val-red: #ff4655;
         }
@@ -43,7 +40,6 @@
         .mono { font-family: 'JetBrains Mono', monospace; }
         .display { font-family: 'Bricolage Grotesque', sans-serif; }
 
-        /* ---------- AURORA BACKGROUND ---------- */
         .aurora-bg { position: fixed; inset: 0; z-index: -3; background: var(--bg-0); overflow: hidden; }
         .blob { position: absolute; border-radius: 50%; filter: blur(90px); }
         .blob-v { width: 520px; height: 520px; background: var(--accent); opacity: .35; top: -140px; left: -100px; animation: float1 17s ease-in-out infinite alternate; }
@@ -52,6 +48,7 @@
         @keyframes float1 { to { transform: translate(60px, 50px) scale(1.15); } }
         @keyframes float2 { to { transform: translate(-50px, -35px) scale(1.1); } }
         @keyframes float3 { to { transform: translate(-40px, 45px) scale(1.2); } }
+        
         .grid-overlay {
             position: absolute; inset: 0;
             background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
@@ -61,7 +58,6 @@
 
         #trail-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
 
-        /* ---------- LIVE DOT ---------- */
         .live-dot {
             width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block;
             animation: pulseDot 2s ease-out infinite;
@@ -72,7 +68,6 @@
             100% { box-shadow: 0 0 0 0 rgba(139,107,255,0); }
         }
 
-        /* ---------- PANELS ---------- */
         .panel {
             background: var(--panel);
             backdrop-filter: blur(18px);
@@ -93,14 +88,12 @@
         }
         .tag-label i { width: 13px; height: 13px; color: var(--accent); }
 
-        /* ---------- HOLO RING (avatar + album art) ---------- */
         .holo-ring {
             background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--teal), var(--accent));
             animation: spin 7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ---------- NOW PLAYING ---------- */
         .eqbar { width: 3px; height: 4px; background: var(--accent); display: inline-block; border-radius: 1px; }
         .now-playing.is-live .eqbar { animation: eqBounce 0.8s ease infinite alternate; }
         .now-playing.is-live .eqbar:nth-child(2) { animation-delay: .15s; }
@@ -111,7 +104,6 @@
         .progress-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
         .progress-fill { height: 100%; width: 0%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .4s linear; }
 
-        /* ---------- NAV TABS ---------- */
         .nav-btn {
             cursor: pointer; text-align: left; width: 100%; background: transparent; border: none;
             font-family: inherit; color: var(--muted);
@@ -125,7 +117,6 @@
         .nav-btn i { color: var(--muted-2); }
         .nav-btn.active i { color: var(--accent); }
 
-        /* ---------- LINK ROWS ---------- */
         .link-row {
             position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px;
             padding: 16px 18px; text-decoration: none; overflow: hidden;
@@ -149,7 +140,6 @@
 
         .status-dot { transition: background-color .3s ease, box-shadow .3s ease; }
 
-        /* ---------- SITE AUDIO MINI VISUALIZER ---------- */
         .bar { width: 3px; height: 4px; background-color: var(--accent); display: inline-block; border-radius: 1px; }
         .playing .bar { animation: bounceAudio 0.8s ease infinite alternate; }
         .playing .bar:nth-child(2) { animation-delay: 0.15s; }
@@ -168,10 +158,6 @@
 
         ::selection { background: var(--accent); color: #0c0716; }
         a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
-        }
     </style>
 </head>
 <body class="min-h-screen select-none">
@@ -204,7 +190,6 @@
         </div>
     </div>
 
-    <!-- NOW PLAYING HERO -->
     <div class="w-full max-w-4xl mx-auto px-4 sm:px-8 mt-5">
         <div class="panel rounded-2xl p-5 now-playing" id="now-playing-card">
             <div class="flex items-center gap-4">
@@ -234,7 +219,6 @@
 
     <div class="w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 px-4 sm:px-8 pt-6 pb-10">
 
-        <!-- SIDEBAR -->
         <div class="lg:col-span-4 space-y-5">
 
             <div class="panel rounded-2xl p-6 text-center flex flex-col items-center space-y-4">
@@ -274,7 +258,6 @@
             </div>
         </div>
 
-        <!-- MAIN -->
         <div class="lg:col-span-8 space-y-5">
 
             <div id="panel-core" class="tab-panel space-y-5">
@@ -288,9 +271,9 @@
                         <div class="p-4 rounded-xl flex flex-col justify-between" style="background:rgba(255,255,255,0.02); border:1px solid var(--border)">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold" style="color:var(--text)">FenixMC</span>
-                                <i data-lucide="monitor-dot" class="w-3.5 h-3.5" style="color:var(--dnd)"></i>
+                                <i data-lucide="monitor-dot" class="w-3.5 h-3.5" style="color:#ff4d6d"></i>
                             </div>
-                            <span class="text-[10px] font-semibold mt-3 tracking-wide" style="color:var(--dnd)">[SS VERIFIED]</span>
+                            <span class="text-[10px] font-semibold mt-3 tracking-wide" style="color:#ff4d6d">[SS VERIFIED]</span>
                         </div>
                     </div>
                 </div>
@@ -336,7 +319,6 @@
     <script>
         const DISCORD_ID = "1501329544202686545";
 
-        /* ---------- TAB NAVIGATION ---------- */
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -346,7 +328,6 @@
             });
         });
 
-        /* ---------- SITE BACKGROUND MUSIC ---------- */
         const audio = document.getElementById('bg-music');
         const musicContainer = document.getElementById('music-container');
         const audioText = document.getElementById('audio-text');
@@ -356,18 +337,52 @@
 
         audio.volume = volumeControl.value;
 
+        function setAudioUI(isOn) {
+            playing = isOn;
+            if (isOn) {
+                musicContainer.classList.add('playing');
+                audioText.textContent = "AUDIO ON";
+            } else {
+                musicContainer.classList.remove('playing');
+                audioText.textContent = "AUDIO OFF";
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function startAudio() {
+            if (!playing && audio.paused) {
+                audio.play().then(() => {
+                    setAudioUI(true);
+                    removeAutoPlayListeners();
+                }).catch(() => {});
+            }
+        }
+
         function toggleAudio() {
             if (playing) {
                 audio.pause();
-                musicContainer.classList.remove('playing');
-                audioText.textContent = "AUDIO OFF";
+                setAudioUI(false);
             } else {
-                audio.play().then(() => {
-                    musicContainer.classList.add('playing');
-                    audioText.textContent = "AUDIO ON";
-                }).catch(() => console.log("Blocco riproduzione"));
+                audio.play().then(() => setAudioUI(true)).catch(() => {});
             }
-            playing = !playing;
+        }
+
+        startAudio();
+
+        const interactionEvents = ['click', 'touchstart', 'keydown'];
+
+        function onUserInteraction() {
+            startAudio();
+        }
+
+        interactionEvents.forEach(evt => {
+            document.addEventListener(evt, onUserInteraction, { once: true });
+        });
+
+        function removeAutoPlayListeners() {
+            interactionEvents.forEach(evt => {
+                document.removeEventListener(evt, onUserInteraction);
+            });
         }
 
         musicContainer.addEventListener('click', (e) => {
@@ -380,21 +395,9 @@
             if (audio.volume == 0) volumeIcon.setAttribute('data-lucide', 'volume-x');
             else if (audio.volume < 0.4) volumeIcon.setAttribute('data-lucide', 'volume-1');
             else volumeIcon.setAttribute('data-lucide', 'volume-2');
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         });
 
-        document.body.addEventListener('click', () => {
-            if (!playing && audio.paused) {
-                audio.play().then(() => {
-                    playing = true;
-                    musicContainer.classList.add('playing');
-                    audioText.textContent = "AUDIO ON";
-                    lucide.createIcons();
-                }).catch(() => {});
-            }
-        }, { once: true });
-
-        /* ---------- CURSOR TRAIL (violet -> magenta duotone) ---------- */
         const canvas = document.getElementById('trail-canvas');
         const ctx = canvas.getContext('2d');
         let points = [];
@@ -411,8 +414,6 @@
             points.push({ x: e.clientX, y: e.clientY, alpha: 1.0 });
         });
 
-        function lerp(a, b, t) { return a + (b - a) * t; }
-
         function drawTrail() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (points.length > 1) {
@@ -420,7 +421,9 @@
                     const p1 = points[i - 1];
                     const p2 = points[i];
                     const t = i / points.length;
-                    const r = lerp(139, 255, t), g = lerp(107, 95, t), b = lerp(255, 160, t);
+                    const r = 139 + (255 - 139) * t;
+                    const g = 107 + (95 - 107) * t;
+                    const b = 255 + (160 - 255) * t;
                     const opacity = t * p2.alpha * 0.55;
                     ctx.beginPath();
                     ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
@@ -440,7 +443,6 @@
         }
         drawTrail();
 
-        /* ---------- NOW PLAYING (Spotify via Lanyard) ---------- */
         let currentSpotify = null;
 
         function formatTime(ms) {
@@ -502,46 +504,42 @@
             try {
                 const r = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
                 const d = await r.json();
-                if (!d.success) {
-                    document.getElementById("dc-name").textContent = "Discord non collegato";
-                    document.getElementById("dc-status-text").textContent = "Entra in discord.gg/lanyard per attivare lo stato live";
+                if (!d.success || !d.data) {
+                    document.getElementById("dc-name").textContent = "Offline";
                     setNowPlaying(false);
                     return;
                 }
-                if (d.success && d.data) {
-                    const userdata = d.data;
-                    document.getElementById("dc-name").textContent = userdata.discord_user.global_name || userdata.discord_user.username;
+                
+                const userdata = d.data;
+                document.getElementById("dc-name").textContent = userdata.discord_user.global_name || userdata.discord_user.username;
 
-                    if (userdata.discord_user.avatar) {
-                        const avatarUrl = `https://cdn.discordapp.com/avatars/${DISCORD_ID}/${userdata.discord_user.avatar}.png?size=256`;
-                        document.getElementById("dc-pfp").src = avatarUrl;
-                        document.getElementById("main-avatar").src = avatarUrl;
-                    }
+                if (userdata.discord_user.avatar) {
+                    const avatarUrl = `https://cdn.discordapp.com/avatars/${DISCORD_ID}/${userdata.discord_user.avatar}.png?size=256`;
+                    document.getElementById("dc-pfp").src = avatarUrl;
+                    document.getElementById("main-avatar").src = avatarUrl;
+                }
 
-                    const s = userdata.discord_status;
-                    const ind = document.getElementById("dc-status");
-                    ind.style.boxShadow = 'none';
-                    if (s === 'online') { ind.style.background = '#23c55e'; ind.style.boxShadow = '0 0 8px #23c55e'; }
-                    else if (s === 'idle') { ind.style.background = '#f5b942'; ind.style.boxShadow = '0 0 8px #f5b942'; }
-                    else if (s === 'dnd') { ind.style.background = '#ff4d6d'; ind.style.boxShadow = '0 0 8px #ff4d6d'; }
-                    else { ind.style.background = '#5c5474'; }
+                const s = userdata.discord_status;
+                const ind = document.getElementById("dc-status");
+                ind.style.boxShadow = 'none';
+                if (s === 'online') { ind.style.background = '#23c55e'; ind.style.boxShadow = '0 0 8px #23c55e'; }
+                else if (s === 'idle') { ind.style.background = '#f5b942'; ind.style.boxShadow = '0 0 8px #f5b942'; }
+                else if (s === 'dnd') { ind.style.background = '#ff4d6d'; ind.style.boxShadow = '0 0 8px #ff4d6d'; }
+                else { ind.style.background = '#5c5474'; }
 
-                    if (userdata.listening_to_spotify && userdata.spotify) {
-                        setNowPlaying(true, userdata.spotify);
-                        document.getElementById("dc-status-text").textContent = "🎧 In ascolto su Spotify";
+                if (userdata.listening_to_spotify && userdata.spotify) {
+                    setNowPlaying(true, userdata.spotify);
+                    document.getElementById("dc-status-text").textContent = "🎧 In ascolto su Spotify";
+                } else {
+                    setNowPlaying(false);
+                    if (userdata.activities && userdata.activities.length > 0) {
+                        const act = userdata.activities.find(a => a.type !== 4) || userdata.activities[0];
+                        document.getElementById("dc-status-text").textContent = act.type === 4 ? act.state : `In-Game: ${act.name}`;
                     } else {
-                        setNowPlaying(false);
-                        if (userdata.activities && userdata.activities.length > 0) {
-                            const act = userdata.activities.find(a => a.type !== 4) || userdata.activities[0];
-                            document.getElementById("dc-status-text").textContent = act.type === 4 ? act.state : `In-Game: ${act.name}`;
-                        } else {
-                            document.getElementById("dc-status-text").textContent = s === "offline" ? "Disconnesso" : "Disponibile";
-                        }
+                        document.getElementById("dc-status-text").textContent = s === "offline" ? "Disconnesso" : "Disponibile";
                     }
                 }
             } catch (err) {
-                console.error("Errore nel caricamento dei dati Discord:", err);
-                document.getElementById("dc-status-text").textContent = "Impossibile contattare Lanyard";
                 setNowPlaying(false);
             }
         }
