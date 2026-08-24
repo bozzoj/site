@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bxo // Beyond Limits</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,6 +16,7 @@
                             purple: '#7c3aed',
                             cyan: '#06b6d4',
                             pink: '#ec4899',
+                            amber: '#f59e0b',
                             dark: '#030712'
                         }
                     },
@@ -35,9 +36,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        * {
-            user-select: none;
-        }
+        * { user-select: none; }
 
         body {
             background-color: #030712;
@@ -49,32 +48,68 @@
         /* Video Background */
         #bg-video {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             object-fit: cover;
+            z-index: -3;
+            pointer-events: none;
+            opacity: 0.55;
+            display: none; /* mostrato via JS solo se un file video viene trovato */
+        }
+
+        /* Image Background (fallback se non c'è un video) */
+        #bg-image {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -3;
+            pointer-events: none;
+            opacity: 0.55;
+            display: none; /* mostrato via JS solo se un file immagine viene trovato */
+        }
+
+        /* Dark vignette + grain overlay for depth, keeps content readable */
+        #bg-overlay {
+            position: fixed;
+            inset: 0;
             z-index: -2;
             pointer-events: none;
-            opacity: 0.65; /* Regola l'opacità se vuoi il video più scuro o più luminoso */
+            background:
+                radial-gradient(ellipse at center, transparent 0%, rgba(3,7,18,0.55) 70%, rgba(3,7,18,0.92) 100%);
         }
 
         /* Ambient Glow Blobs */
         .glow-blob {
             position: fixed;
-            width: 600px;
-            height: 600px;
+            width: 620px; height: 620px;
             border-radius: 50%;
-            filter: blur(120px);
+            filter: blur(130px);
             z-index: -1;
-            opacity: 0.25;
-            animation: pulseGlow 8s infinite alternate ease-in-out;
+            opacity: 0.22;
+            animation: pulseGlow 9s infinite alternate ease-in-out;
             pointer-events: none;
         }
 
         @keyframes pulseGlow {
-            0% { transform: scale(1) translate(0, 0); opacity: 0.2; }
-            100% { transform: scale(1.2) translate(30px, -30px); opacity: 0.35; }
+            0% { transform: scale(1) translate(0, 0); opacity: 0.18; }
+            100% { transform: scale(1.25) translate(30px, -30px); opacity: 0.32; }
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .rise { animation: floatUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        .rise-1 { animation-delay: 0.05s; }
+        .rise-2 { animation-delay: 0.15s; }
+        .rise-3 { animation-delay: 0.25s; }
+        .rise-4 { animation-delay: 0.35s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .rise, .glow-blob, .eq-bar { animation: none !important; }
         }
 
         /* Premium Holographic Glass */
@@ -100,6 +135,7 @@
         .holo-card:hover {
             border-color: rgba(124, 58, 237, 0.5);
             box-shadow: 0 20px 50px -10px rgba(124, 58, 237, 0.25), 0 0 30px -5px rgba(6, 182, 212, 0.2);
+            transform: translateY(-2px);
         }
 
         /* Animated Glowing Border Gradient */
@@ -107,9 +143,9 @@
             position: relative;
             border-radius: 28px;
             padding: 1px;
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.4), rgba(6, 182, 212, 0.4), rgba(236, 72, 153, 0.4));
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.5), rgba(6, 182, 212, 0.5), rgba(236, 72, 153, 0.5));
             background-size: 200% 200%;
-            animation: borderGradient 4s linear infinite;
+            animation: borderGradient 5s linear infinite;
         }
 
         @keyframes borderGradient {
@@ -126,19 +162,12 @@
             height: 4px;
             transition: height 0.15s ease;
         }
-
-        .is-playing .eq-bar {
-            animation: eqDance 0.5s infinite alternate ease-in-out;
-        }
+        .is-playing .eq-bar { animation: eqDance 0.5s infinite alternate ease-in-out; }
         .is-playing .eq-bar:nth-child(1) { animation-delay: 0.1s; }
         .is-playing .eq-bar:nth-child(2) { animation-delay: 0.3s; }
         .is-playing .eq-bar:nth-child(3) { animation-delay: 0.2s; }
         .is-playing .eq-bar:nth-child(4) { animation-delay: 0.4s; }
-
-        @keyframes eqDance {
-            0% { height: 4px; }
-            100% { height: 20px; }
-        }
+        @keyframes eqDance { 0% { height: 4px; } 100% { height: 20px; } }
 
         /* Custom Audio Slider */
         input[type="range"] {
@@ -149,26 +178,41 @@
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 10px;
-            height: 10px;
+            width: 10px; height: 10px;
             border-radius: 50%;
             background: #06b6d4;
             box-shadow: 0 0 10px #06b6d4;
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.4);
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.4); }
+
+        /* Focus visibility for accessibility */
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid #06b6d4;
+            outline-offset: 3px;
+        }
+
+        /* Status dot pulse */
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: dotPulse 2s infinite ease-in-out;
+        }
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 sm:p-8 md:p-12 relative">
 
-    <!-- Background Video & Glow Backgrounds -->
-    <video id="bg-video" autoplay loop muted playsinline>
-        <source src="back.mp4" type="video/mp4">
-    </video>
-    
+    <!-- Background Video / Image (rilevati automaticamente via JS) & Glow Backgrounds -->
+    <video id="bg-video" autoplay loop muted playsinline></video>
+    <div id="bg-image"></div>
+    <div id="bg-overlay"></div>
+
     <div class="glow-blob bg-brand-purple -top-20 -left-20"></div>
     <div class="glow-blob bg-brand-cyan bottom-10 right-10"></div>
 
@@ -178,10 +222,10 @@
     <div class="max-w-4xl mx-auto w-full space-y-8 relative z-10">
 
         <!-- HEADER / NAVBAR -->
-        <header class="flex justify-end items-center">
+        <header class="flex justify-end items-center rise rise-1">
             <!-- Sleek Audio Widget -->
             <div class="holo-card px-4 py-2.5 flex items-center gap-4 border-white/10">
-                <button id="music-btn" class="flex items-center gap-3 font-mono text-xs text-gray-200 hover:text-white transition-colors group">
+                <button id="music-btn" class="flex items-center gap-3 font-mono text-xs text-gray-200 hover:text-white transition-colors group" aria-label="Attiva o disattiva l'audio">
                     <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30 group-hover:scale-110 transition-transform">
                         <i data-lucide="play" id="play-icon" class="w-3.5 h-3.5 fill-current"></i>
                     </div>
@@ -189,7 +233,7 @@
                 </button>
 
                 <!-- Visualizer Bars -->
-                <div id="eq-visualizer" class="flex items-end gap-1 h-5">
+                <div id="eq-visualizer" class="flex items-end gap-1 h-5" aria-hidden="true">
                     <div class="eq-bar"></div>
                     <div class="eq-bar"></div>
                     <div class="eq-bar"></div>
@@ -201,19 +245,22 @@
                 <!-- Volume Controls -->
                 <div class="flex items-center gap-2">
                     <i data-lucide="volume-2" id="vol-icon" class="w-3.5 h-3.5 text-gray-400"></i>
-                    <input type="range" id="vol-control" min="0" max="1" step="0.02" value="0.5" class="w-16 cursor-pointer">
+                    <input type="range" id="vol-control" min="0" max="1" step="0.02" value="0.5" class="w-16 cursor-pointer" aria-label="Volume">
                 </div>
             </div>
         </header>
 
         <!-- MAIN HERO BANNER -->
-        <div class="glow-border-box">
+        <div class="glow-border-box rise rise-2">
             <section class="holo-card p-8 sm:p-12 text-center flex flex-col items-center bg-gray-950/80">
-                
+
                 <!-- Holographic Avatar Wrapper -->
                 <div class="relative mb-6 group cursor-pointer">
                     <div class="absolute -inset-3 rounded-full bg-gradient-to-r from-purple-600 via-cyan-400 to-pink-500 blur-lg opacity-70 group-hover:opacity-100 transition-opacity animate-pulse"></div>
-                    <img id="user-avatar" src="discord_fake_avatar_decorations_1782047360579.gif" alt="Bxo" class="w-32 h-32 sm:w-36 sm:h-36 rounded-full object-cover relative z-10 border-2 border-gray-900 shadow-2xl">
+                    <img id="user-avatar" src="discord_fake_avatar_decorations_1782047360579.gif" alt="Avatar di Bxo" class="w-32 h-32 sm:w-36 sm:h-36 rounded-full object-cover relative z-10 border-2 border-gray-900 shadow-2xl">
+                    <div class="absolute bottom-1 right-1 z-20 w-6 h-6 rounded-full bg-gray-950 border-2 border-gray-950 flex items-center justify-center">
+                        <span class="status-dot"></span>
+                    </div>
                 </div>
 
                 <!-- Username & Title -->
@@ -237,7 +284,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <!-- SERVER ROLES CARD -->
-            <div class="holo-card p-7 space-y-5">
+            <div class="holo-card p-7 space-y-5 rise rise-3">
                 <div class="flex items-center justify-between font-mono text-xs text-gray-400 uppercase tracking-widest border-b border-white/5 pb-3">
                     <span class="flex items-center gap-2">
                         <i data-lucide="award" class="w-4 h-4 text-purple-400"></i> Server Roles
@@ -265,7 +312,7 @@
             </div>
 
             <!-- DISCORD CONTACT CARD -->
-            <div class="holo-card p-7 flex flex-col justify-between space-y-5">
+            <div class="holo-card p-7 flex flex-col justify-between space-y-5 rise rise-3">
                 <div class="flex items-center justify-between font-mono text-xs text-gray-400 uppercase tracking-widest border-b border-white/5 pb-3">
                     <span class="flex items-center gap-2">
                         <i data-lucide="message-square" class="w-4 h-4 text-cyan-400"></i> Direct Contact
@@ -276,17 +323,17 @@
                 <div class="my-auto py-2">
                     <p class="font-mono text-xs text-gray-400 mb-2">Per comunicazioni rapide o richieste staff:</p>
                     <div class="font-mono text-sm text-white font-bold flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/5">
-                        <i data-lucide="user" class="w-4 h-4 text-purple-400"></i> @.dannati
+                        <i data-lucide="user" class="w-4 h-4 text-purple-400"></i> .dannati
                     </div>
                 </div>
 
-                <a href="https://discord.com/users/1501329544202686545" target="_blank" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs font-mono tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 hover:scale-[1.02]">
-                    <i data-lucide="send" class="w-4 h-4"></i> DISCORD DIRECT (@.dannati)
+                <a href="https://discord.com/users/1501329544202686545" target="_blank" rel="noopener" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs font-mono tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 hover:scale-[1.02]">
+                    <i data-lucide="send" class="w-4 h-4"></i> DISCORD DIRECT (.dannati)
                 </a>
             </div>
 
             <!-- GAMING PROFILES CARD (FULL WIDTH) -->
-            <div class="holo-card p-7 space-y-5 md:col-span-2">
+            <div class="holo-card p-7 space-y-5 md:col-span-2 rise rise-4">
                 <div class="flex items-center justify-between font-mono text-xs text-gray-400 uppercase tracking-widest border-b border-white/5 pb-3">
                     <span class="flex items-center gap-2">
                         <i data-lucide="gamepad-2" class="w-4 h-4 text-emerald-400"></i> Game Identities
@@ -295,7 +342,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-                    <a href="https://namemc.com/profile/_Bxo" target="_blank" class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all flex items-center justify-between group">
+                    <a href="https://namemc.com/profile/_Bxo" target="_blank" rel="noopener" class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all flex items-center justify-between group">
                         <div class="flex items-center gap-3">
                             <i data-lucide="box" class="w-5 h-5 text-emerald-400"></i>
                             <span class="text-white font-bold group-hover:text-emerald-300 transition-colors">Minecraft</span>
@@ -303,7 +350,7 @@
                         <span class="text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20 font-bold">_Bxo</span>
                     </a>
 
-                    <a href="https://tracker.gg/valorant" target="_blank" class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-pink-500/50 hover:bg-pink-500/5 transition-all flex items-center justify-between group">
+                    <a href="https://tracker.gg/valorant" target="_blank" rel="noopener" class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-pink-500/50 hover:bg-pink-500/5 transition-all flex items-center justify-between group">
                         <div class="flex items-center gap-3">
                             <i data-lucide="crosshair" class="w-5 h-5 text-pink-400"></i>
                             <span class="text-white font-bold group-hover:text-pink-300 transition-colors">Valorant</span>
@@ -315,10 +362,80 @@
 
         </div>
 
+        <footer class="text-center pb-4 rise rise-4">
+            <p class="font-mono text-[10px] text-gray-600 tracking-widest uppercase">Bxo // Beyond Limits</p>
+        </footer>
+
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // ============================================
+        // RILEVAMENTO AUTOMATICO SFONDO (video o immagine)
+        // Basta caricare nella repo un file chiamato "back"
+        // con una di queste estensioni: viene usato in automatico.
+        // Priorità: prima cerca un video, poi un'immagine.
+        // ============================================
+        const VIDEO_CANDIDATES = ['back.mp4', 'back.webm'];
+        const IMAGE_CANDIDATES = ['back.png', 'back.jpg', 'back.jpeg', 'back.webp', 'back.gif'];
+
+        function fileExists(url, type) {
+            return new Promise((resolve) => {
+                if (type === 'video') {
+                    const v = document.createElement('video');
+                    v.preload = 'metadata';
+                    v.onloadedmetadata = () => resolve(true);
+                    v.onerror = () => resolve(false);
+                    v.src = url;
+                } else {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                }
+            });
+        }
+
+        async function findFirstExisting(candidates, type) {
+            for (const path of candidates) {
+                // eslint-disable-next-line no-await-in-loop
+                const found = await fileExists(path, type);
+                if (found) return path;
+            }
+            return null;
+        }
+
+        async function initBackground() {
+            const videoEl = document.getElementById('bg-video');
+            const imageEl = document.getElementById('bg-image');
+
+            // 1. Prova prima con un video
+            const videoPath = await findFirstExisting(VIDEO_CANDIDATES, 'video');
+            if (videoPath) {
+                videoEl.innerHTML = `<source src="${videoPath}" type="video/${videoPath.endsWith('webm') ? 'webm' : 'mp4'}">`;
+                videoEl.load();
+                videoEl.play().catch(() => {});
+                videoEl.style.display = 'block';
+                imageEl.style.display = 'none';
+                return;
+            }
+
+            // 2. Altrimenti prova con un'immagine
+            const imagePath = await findFirstExisting(IMAGE_CANDIDATES, 'image');
+            if (imagePath) {
+                imageEl.style.backgroundImage = `url("${imagePath}")`;
+                imageEl.style.display = 'block';
+                videoEl.style.display = 'none';
+                return;
+            }
+
+            // 3. Nessuno dei due trovato: resta solo lo sfondo scuro + glow
+            videoEl.style.display = 'none';
+            imageEl.style.display = 'none';
+        }
+
+        initBackground();
+
         const DISCORD_ID = "1501329544202686545";
 
         // AUDIO CONTROLLER
